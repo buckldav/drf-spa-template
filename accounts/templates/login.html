@@ -1,0 +1,50 @@
+<form id="loginForm" method="POST">
+    {% csrf_token %}
+    {{login_form}}    
+    <input type="submit" value="Submit">
+</form>
+<script>
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+    async function postData(json) {
+        const response = await fetch('{% url "login" %}', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                "X-CSRFToken": getCookie('csrftoken')
+            },
+            body: json
+        })
+        if (response.ok) {
+            response.json().then(data => {
+                // {expiry: "", token: ""}
+                console.log(data)
+            })
+        } else {
+            console.log(response)
+        }
+    }
+    const loginForm = document.querySelector("#loginForm")
+    loginForm.onsubmit = (e) => {
+        e.preventDefault()
+        const formData = new FormData(loginForm)
+        var object = {}
+        formData.forEach((value, key) => object[key] = value)
+        postData(JSON.stringify(object))
+    }
+
+</script>
